@@ -1,8 +1,9 @@
 import styled from "styled-components/native";
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Button, TextInput } from "react-native";
+import { StyleSheet, Button, TextInput, View } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import axios from "axios";
+import { baseUrl } from "../config";
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -20,16 +21,32 @@ export default function ScanScreen() {
     })();
   }, []);
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    const response = await axios.post(baseUrl + `/api/transaction-to-done/`, { transaction_id: data, client_id: 1})
+    this.props.setModal({
+      message:
+        "Заказ подтвержден, ожидайте продавца",
+      icon: "checkmark-outline",
+      iconColor: "green",
+    });
+    await sleep(2500);
+    this.props.resetModal();
+    // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
   };
 
   const handleButtonClick = async () => {
     try {
-      const resp = await axios.get("/api/vendors/");
+      const response = await axios.post(baseUrl + `/api/transaction-to-done/`, { transaction_id: text, client_id: 1})
       console.log(resp.data);
-      alert("Code request", resp.status);
+      this.props.setModal({
+        message:
+          "Заказ подтвержден, ожидайте продавца",
+        icon: "checkmark-outline",
+        iconColor: "green",
+      });
+      await sleep(2500);
+      this.props.resetModal();
     } catch (error) {
       console.log("error");
     }
@@ -43,6 +60,7 @@ export default function ScanScreen() {
   }
 
   return (
+    <RootContainer>
     <Container>
       <BarCodeScanner
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -51,25 +69,24 @@ export default function ScanScreen() {
       {scanned && (
         <Button title={"Tap to Scan Again"} onPress={() => setScanned(false)} />
       )}
-      {/* <TextInput
-        style={{
-          height: 40,
-          width: 120,
-          textAlign: "center",
-          borderTopRightRadius: 14,
-          borderColor: "#000",
-          borderWidth: 2,
-        }}
-        placeholder="Введите номер заказа"
-        onChangeText={(newText) => setText(newText)}
-        defaultValue={text}
-      />
-      <Button title="Сделать запрос" onPress={handleButtonClick} />
-
-      <Text style={{ padding: 10, fontSize: 15 }}>Заказ: {text}</Text> */}
+      
+      {/* <Text style={{ padding: 10, fontSize: 15 }}>Заказ: {text}</Text> */}
     </Container>
+    <Fallback>
+    <TextInputStyled
+      placeholder="Введите номер заказа вручную при неработающем QRCode"
+      onChangeText={(newText) => setText(newText)}
+      defaultValue={text}
+    />
+    <Button title="Отправить" onPress={handleButtonClick}>Отправить</Button>
+    </Fallback>
+    </RootContainer>
   );
 }
+
+const RootContainer = styled.View`
+  flex: 1;
+`
 
 const Container = styled.View`
   flex: 1;
@@ -77,5 +94,15 @@ const Container = styled.View`
   justify-content: center;
   /* align-items: center; */
 `;
+
+const Fallback = styled.View`
+  /* align-self: flex-end; */
+  margin-top: 10px;
+  background-color: rgba(255, 255, 255, 0.8)
+`
+
+const TextInputStyled = styled.TextInput`
+  padding: 5px;
+`
 
 const Text = styled.Text``;

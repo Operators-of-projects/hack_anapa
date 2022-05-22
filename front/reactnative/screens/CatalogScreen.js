@@ -3,145 +3,144 @@ import styled from "styled-components/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity, StatusBar } from "react-native";
 import { ScrollView, Dimensions } from "react-native";
+import { connect } from "react-redux";
+import ProductItem from "../components/Product";
+import { baseUrl } from "../config";
+import axios from "axios";
+
 
 const screenWidth = Dimensions.get("window").width;
 
-class CatalogScreen extends React.Component {
-    static navigationOptions = {
-        title: "Catalog",
-    };
-
-    componentDidMount() {
-        StatusBar.setBarStyle("light-content", true);
-    }
-
-    componentWillUnmount() {
-        StatusBar.setBarStyle("dark-content", true);
-    }
-
-    render() {
-        const { navigation, route } = this.props;
-        const { catalog } = route.params;
-        // key={index}
-        // image={shop.image}
-        // title={shop.title}
-        // subtitle={shop.subtitle}
-        // logo={shop.logo}
-        // author={shop.author}
-        // avatar={shop.avatar}
-        // caption={shop.caption}
-        return (
-            <ScrollView style={{ flex: 1, background: "white" }}>
-                <Container>
-                    <StatusBar hidden />
-                    <Cover>
-                        <Image source={catalog.image} />
-                        <Wrapper>
-                            <Logo source={catalog.logo} />
-                            <Subtitle>{catalog.subtitle}</Subtitle>
-                        </Wrapper>
-                        <Title>{catalog.title}</Title>
-                        <Caption>{catalog.caption}</Caption>
-                    </Cover>
-                    <TouchableOpacity
-                        onPress={() => {
-                            this.props.navigation.goBack();
-                        }}
-                        style={{ position: "absolute", top: 20, right: 20 }}
-                    >
-                        <CloseView>
-                            <Ionicons
-                                name="ios-close"
-                                size={36}
-                                color="#4775f2"
-                                style={{ marginTop: 0 }}
-                            />
-                        </CloseView>
-                    </TouchableOpacity>
-                    <Content>
-                        {products.map(product => <Product key={product.name}>
-                            <ProductImage source={{ uri: "https://tailwindui.com/img/ecommerce-images/shopping-cart-page-04-product-02.jpg" }} />
-                            <ProductContent>
-                                <ProductName>{product.name}</ProductName>
-                                <ProductDescr>{product.price}</ProductDescr>
-                            </ProductContent>
-                        </Product>)}
-
-                    </Content>
-                </Container>
-            </ScrollView>
-        );
-    }
+function mapStateToProps(state) {
+  return {
+    cart: state.cart,
+  };
 }
 
-export default CatalogScreen;
+function mapDispatchToProps(dispatch) {
+  return {
+    addItem: (item) =>
+      dispatch({
+        type: "ADD_ITEM_CART",
+        item: item,
+      }),
+  };
+}
 
-const Product = styled.View`
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #e5e7eb;
-`
+class CatalogScreen extends React.Component {
+  static navigationOptions = {
+    title: "Catalog",
+  };
 
-const ProductContent = styled.View`
-    flex-direction: column;
-    justify-content: space-around;
-`
+  state = {
+    products: []
+  }
 
-const ProductName = styled.Text`
-    font-weight: 600;
-    font-size: 22px;
-    color: #111827;
-    width: 180px;
-    text-align: right;
-`
-const ProductDescr = styled.Text`
-    font-size: 20;
-    margin-left: auto;
-    color: #111827;
-`
+  async componentDidMount() {
+    StatusBar.setBarStyle("light-content", true);
+    try {
+      const { catalog } = this.props.route.params;
+      const vendorId = catalog.id;
+      const response = await axios.get(`${baseUrl}/api/vendor/${vendorId}/products`);
+      this.setState({
+        products: response.data
+      })
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-const ProductImage = styled.Image`
-    height: 120px;
-    width: 120px;
-    flex-shrink: 0;
-    overflow: hidden;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-`
+  componentWillUnmount() {
+    StatusBar.setBarStyle("dark-content", true);
+  }
 
-const Card = styled.View`
+  render() {
+    const { navigation, route } = this.props;
+    const { catalog } = route.params;
+    // key={index}
+    // image={shop.image}
+    // title={shop.title}
+    // subtitle={shop.subtitle}
+    // logo={shop.logo}
+    // author={shop.author}
+    // avatar={shop.avatar}
+    // caption={shop.caption}
+    return (
+      <ScrollView style={{ flex: 1, background: "white" }}>
+        <Container>
+          <StatusBar hidden />
+          <Cover>
+            <Image source={{ uri: `${baseUrl}${catalog.photo}` }} />
+            <Wrapper>
+              <Logo source={catalog.logo} />
+              <Subtitle>{catalog.subtitle}</Subtitle>
+            </Wrapper>
+            <Title>{catalog.name}</Title>
+            <Caption>{catalog.description}</Caption>
+          </Cover>
+          <TouchableOpacity
+            onPress={() => {
+              this.props.navigation.goBack();
+            }}
+            style={{ position: "absolute", top: 20, right: 20 }}
+          >
+            <CloseView>
+              <Ionicons
+                name="ios-close"
+                size={36}
+                color="#4775f2"
+                style={{ marginTop: 0 }}
+              />
+            </CloseView>
+          </TouchableOpacity>
+          <Content>
+            {this.state.products.map((product, i) => (
+              <ProductItem
+                key={i}
+                onPress={() => this.props.addItem(product)}
+                product={product}
+              />
+            ))}
+          </Content>
+        </Container>
+      </ScrollView>
+    );
+  }
+}
 
-`
+export default connect(mapStateToProps, mapDispatchToProps)(CatalogScreen);
+
+const Card = styled.View``;
 
 const products = [
-    {
-        name: "Шаверма классическая fsfd",
-        status: true,
-        price: 140,
-    },
-    {
-        name: "Шаверма по аджарски",
-        status: true,
-        price: 140,
-    },
-    {
-        name: "Гирос",
-        status: true,
-        price: 160,
-    },
-    {
-        name: "Гирос ФРИ",
-        status: true,
-        price: 170,
-    },
-]
+  {
+    name: "Шаверма классическая fsfd",
+    status: true,
+    price: 140,
+  },
+  {
+    name: "Шаверма по аджарски",
+    status: true,
+    price: 140,
+  },
+  {
+    name: "Гирос",
+    status: true,
+    price: 160,
+  },
+  {
+    name: "Гирос ФРИ",
+    status: true,
+    price: 170,
+  },
+];
 
 const Content = styled.View`
-padding: 20px;
-font-size: 25px;
-line-height: 30;
-`
+  padding: 20px;
+  font-size: 25px;
+  line-height: 30;
+`;
 
 const Container = styled.View`
   flex: 1;
@@ -160,7 +159,7 @@ const Image = styled.Image`
 
 const Title = styled.Text`
   font-size: 24px;
-  color: white;
+  color: #3c4560;
   font-weight: bold;
   width: 170px;
   position: absolute;
@@ -169,8 +168,8 @@ const Title = styled.Text`
 `;
 
 const Caption = styled.Text`
-  color: white;
-  font-size: 17px;
+  color: #3c4560;
+  font-size: 20px;
   position: absolute;
   bottom: 20px;
   left: 20px;

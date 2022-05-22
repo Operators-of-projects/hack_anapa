@@ -5,12 +5,21 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "../screens/HomeScreen";
 import SectionScreen from "../screens/SectionScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import CoursesScren from "../screens/CoursesScreen";
+import CoursesScren from "../screens/CartScreen";
 import ScanScreen from "../screens/ScanScreen";
 import CatalogScreen from "../screens/CatalogScreen";
+import { connect } from "react-redux";
+import CartScreen from "../screens/CartScreen";
 
 const activeColor = "#4775f2";
 const inactiveColor = "#b8bece";
+
+function mapStateToProps(state) {
+  return {
+    cart: state.cart,
+  };
+}
+
 
 const HomeStack = createNativeStackNavigator();
 const Home = () => (
@@ -34,6 +43,7 @@ const Home = () => (
   >
     <HomeStack.Screen name="Home" component={HomeScreen} />
     <HomeStack.Screen name="Section" component={SectionScreen} />
+    <HomeStack.Screen name="Cart" component={CartScreen} />
     <HomeStack.Screen name="Catalog" component={CatalogScreen} />
   </HomeStack.Navigator>
 );
@@ -52,7 +62,7 @@ const Scan = () => (
 
 const TabNavigator = createBottomTabNavigator();
 
-const Navigator = () => {
+const Navigator = (props) => {
   return (
     <NavigationContainer>
       <TabNavigator.Navigator screenOptions={{ header: () => null }}>
@@ -74,7 +84,7 @@ const Navigator = () => {
           name="CoursesTab"
           component={Courses}
           options={{
-            tabBarLabel: "Корзина",
+            tabBarLabel: `Корзина`,
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="ios-albums"
@@ -103,4 +113,4 @@ const Navigator = () => {
   );
 };
 
-export default Navigator;
+export default connect(mapStateToProps)(Navigator);

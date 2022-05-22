@@ -55,7 +55,7 @@ class Menu extends React.Component {
         <ScrollView style={{ flex: 1 }}>
           <Cover>
             <Image source={require("../assets/background2.jpg")} />
-            <Title>Наиль Исхаков</Title>
+            <Title>Иван К.</Title>
             <Subtitle></Subtitle>
           </Cover>
           <TouchableOpacity

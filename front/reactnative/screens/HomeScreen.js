@@ -9,12 +9,12 @@ import {
 import styled from "styled-components/native";
 import Card from "../components/Card";
 import Logo from "../components/Logo";
-import Shops from "../components/Course";
+import Shops from "../components/Shop";
 import Menu from "../components/Menu";
 import { connect } from "react-redux";
 import React from "react";
 import Avatar from "../components/Avatar";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import axios from "axios";
 import { baseUrl } from "../config";
 
 function mapStateToProps(state) {
@@ -35,6 +35,7 @@ class HomeScreen extends React.Component {
     scale: new Animated.Value(1),
     opacity: new Animated.Value(1),
     userBalance: 0,
+    vendors: [],
   };
   componentDidUpdate() {
     this.toggleMenu();
@@ -42,12 +43,20 @@ class HomeScreen extends React.Component {
 
   async componentDidMount() {
     StatusBar.setBarStyle("dark-content", true);
-    // try {
-    //   const response = await axios.get(`${baseUrl}/api/client/1`);
-    //   console.log(response.data);
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    try {
+      const response = await axios.get(`${baseUrl}/api/vendors`);
+      
+      console.log(response.data);
+      const clientres = await axios.get(baseUrl + "/api/client/1")
+      console.log(clientres.data.balance)
+      this.setState({
+        vendors: response.data,
+        userBalance: clientres.data.balance
+      })
+      
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   toggleMenu = () => {
@@ -88,7 +97,7 @@ class HomeScreen extends React.Component {
           }}
         >
           <SafeAreaView style={{ flex: 1 }}>
-            <ScrollView>
+            <ScrollView >
               <TitleBar>
                 <TouchableOpacity
                   onPress={this.props.openMenu}
@@ -98,7 +107,7 @@ class HomeScreen extends React.Component {
                 </TouchableOpacity>
                 <Title>Добро пожаловать,</Title>
                 <Name>Иван</Name>
-                <Balance>150</Balance>
+                <Balance>{this.state.userBalance}</Balance>
               </TitleBar>
               <ScrollView
                 style={{
@@ -140,7 +149,7 @@ class HomeScreen extends React.Component {
                 ))}
               </ScrollView>
               <Subtitle>Магазины поблизости</Subtitle>
-              {courses.map((shop, index) => (
+              {this.state.vendors.map((shop, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => {
@@ -151,9 +160,9 @@ class HomeScreen extends React.Component {
                 >
                   <Shops
                     key={index}
-                    image={shop.image}
-                    title={shop.title}
-                    subtitle={shop.subtitle}
+                    image={`${baseUrl}${shop.photo}`}
+                    title={shop.name}
+                    subtitle={shop.description}
                     logo={shop.logo}
                     author={shop.author}
                     avatar={shop.avatar}
@@ -198,7 +207,7 @@ const AnimatedContainer = Animated.createAnimatedComponent(Container);
 
 const Title = styled.Text`
   font-size: 16px;
-  color: #b8bece;
+  color: #000000;// #b8bece;
   font-weight: 500;
 `;
 
@@ -259,7 +268,7 @@ const cards = [
     subtitle: "1 м",
     caption: "2 шаурмы по цене 1ой",
     logo: "navigate-circle-outline",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse in massa non nisl tempor lobortis. Aliquam a nisi fermentum mauris imperdiet faucibus eget a elit. Duis scelerisque cursus nibh at ultrices. Vestibulum ac elit elementum, lacinia urna id, viverra ex. Suspendisse vel ornare nibh, ut tempus lacus. In lobortis porttitor ex vitae blandit. Aliquam tempor urna sit amet consectetur maximus. Nunc tristique turpis et viverra pulvinar. Fusce faucibus quam ac felis interdum, vehicula mattis sapien iaculis. Curabitur vitae orci diam. Aenean in pellentesque augue, sit amet tempus risus. Morbi id ultricies dolor, eget pellentesque felis. Fusce pharetra, ipsum at pulvinar volutpat, neque magna porttitor ante, id cursus sem felis eget felis. Nullam aliquam, lectus consectetur tincidunt consequat, ante augue mattis felis, sit amet interdum lorem ligula sollicitudin metus."
+    content: "Только сегодня в честь дня города 2 шаурмы по цене одной. Предложение не доступно в ресторанах, располагающихся на территории аэропортов, а также военных частей."
   },
   {
     title: "Пирожки от дяди Васи",
@@ -267,7 +276,7 @@ const cards = [
     subtitle: "65 м",
     caption: "300 баллов в подарок",
     logo: "navigate-circle-outline",
-    content: "Quisque maximus, nisi vitae sodales mollis, velit orci porta ex, ac vulputate erat dolor eget massa. Nulla at sem erat. Etiam pellentesque velit non massa condimentum iaculis. Vestibulum id consectetur ex, sed sodales nunc. Vivamus pretium condimentum pharetra. Morbi ac nibh risus. Pellentesque non odio sem. Fusce egestas libero ut ultrices euismod. Morbi condimentum faucibus eros eget consectetur. Praesent eu ullamcorper dui. Quisque congue purus ipsum, ut ullamcorper risus ultrices non. Aliquam fringilla tellus in feugiat lacinia. Quisque sed accumsan diam, in suscipit libero. Aliquam at erat vitae eros malesuada viverra. Morbi consequat aliquam felis, eget fringilla dolor dictum vel."
+    content: "В честь скорого праздника, предложение не распространяется на физических и юридических лиц старше 18 лет"
   },
   {
     title: "Донер Кебаб",
@@ -275,15 +284,7 @@ const cards = [
     subtitle: "300 м",
     caption: "Special: Хачапури с моцареллой",
     logo: "navigate-circle-outline",
-    content: "Vestibulum id interdum tellus, venenatis placerat odio. Donec ultrices, odio non hendrerit ultricies, turpis massa bibendum magna, vitae varius odio eros nec turpis. In convallis nisi dui, quis tincidunt felis pharetra ut. Phasellus malesuada volutpat pharetra. Suspendisse lacus dui, mollis eu mauris quis, ornare pellentesque augue. Suspendisse malesuada lorem at ligula viverra, ut congue libero lobortis. Integer nec lectus porta, tristique dolor non, dignissim leo. Fusce malesuada imperdiet arcu, quis sagittis lectus mattis vitae. Curabitur sed ornare urna. Suspendisse mi eros, blandit non nisl at, semper efficitur velit. Vivamus lobortis mattis leo, quis aliquet arcu ultrices eget. Fusce nec neque magna. Nunc sit amet lacus nunc. Morbi eget risus at eros bibendum egestas pretium vitae dolor. Ut vestibulum dolor sit amet tortor mollis, iaculis accumsan lorem venenatis. Nullam porta ac lectus vel malesuada."
-  },
-  {
-    title: "Чебупельная",
-    image: require("../assets/background14.jpg"),
-    subtitle: "600 м",
-    caption: "4 of 12 sections",
-    logo: "navigate-circle-outline",
-    content: "Integer eu dolor et ipsum ultricies convallis a eget justo. Aliquam cursus fringilla mauris, vitae blandit sapien porta blandit. Nulla facilisi. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec ornare, ex sed egestas aliquam, nisi purus ullamcorper tortor, quis convallis lectus mi sit amet dui. Fusce purus velit, suscipit vitae sagittis sit amet, imperdiet non nunc. Sed varius accumsan lectus non ullamcorper. Proin efficitur tellus dapibus volutpat imperdiet. Sed feugiat felis velit, non luctus lorem tempor nec. Etiam dignissim velit sit amet eros auctor ultricies."
+    content: "Специальное предложение - лучшие санкционные сыры у вашего дома. Хачапури с моцареллой выгодно отличается от остальных хачапури. Лучше только хачапури с рокфором, но это предложение зарезервировано на следующую пятницу 13"
   },
 ];
 

@@ -50,7 +50,7 @@ class SectionScreen extends React.Component {
         </TouchableOpacity>
         <Content>
           <Card>
-
+            {section.content}
           </Card>
         </Content>
       </Container>
@@ -61,7 +61,7 @@ class SectionScreen extends React.Component {
 
 export default SectionScreen;
 
-const Card = styled.View`
+const Card = styled.Text`
 
 `
 
