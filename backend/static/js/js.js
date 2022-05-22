@@ -8,7 +8,7 @@ let myMap;
 const alert = (data, type) => {
   const wrapper = document.createElement('div')
 
-  list = `<svg data-bs-dismiss="alert" onclick="swap_center([${data.client.lat},${data.client.long}])" style="position: absolute; top:0px; right:40px; margin: 12px; position: unset;" class="btn-confirm" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16"><path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/></svg>`
+  list = `<svg data-bs-dismiss="alert" onclick="swap_center([${data.client.lat},${data.client.long}], ${data.id})" style="position: absolute; top:0px; right:40px; margin: 12px; position: unset;" class="btn-confirm" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16"><path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/></svg>`
 //  list += `<div class="btn-group dropup" style="width: 100%;">`
 //  list += `<button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">У вас заказ на ${data.cost}!</button>`
 //  list += `<ul class="dropdown-menu" style="padding: 5px; width: 100%;">`
@@ -33,10 +33,10 @@ function add_alert() {
 	alert(data, 'success')
 }
 
-function swap_center(data){
+function swap_center(data_coard, transaction_id){
     myMap.geoObjects.add(
       new ymaps.Placemark(
-        data, null,
+        data_coard, null,
         {
           balloonContent: "vendorObj.name",
           iconLayout: 'default#image',
@@ -46,10 +46,23 @@ function swap_center(data){
             iconImageOffset: [-5, -38]
         })
     );
-    myMap.setCenter(data);
+    myMap.setCenter(data_coard);
+    response_to_transaction(transaction_id);
     get_orders();
 }
 
+function response_to_transaction(transaction_id){
+    $.ajax({
+        url: `https://a73f-178-155-14-183.eu.ngrok.io/api/transaction/${transaction_id}/`,
+        method: 'put',
+        crossDomain: true,
+        data: {"response": 2},
+        success: function(data){
+            console.log(data.trasaction_id)
+        },
+        traditional: true
+    });
+}
 
 function add_transaction(vendor_id=1) {
     product_ids = []
@@ -60,7 +73,7 @@ function add_transaction(vendor_id=1) {
     });
     
     $.ajax({
-        url: `https://3d2d-178-155-14-183.eu.ngrok.io/api/create-transaction/`,
+        url: `https://a73f-178-155-14-183.eu.ngrok.io/api/create-transaction/`,
         method: 'post',
         crossDomain: true,
         data: {"vendor_id": vendor_id, "products": product_ids},
@@ -74,7 +87,7 @@ function add_transaction(vendor_id=1) {
 
 function get_products(vendor_id=1){
     $.ajax({
-        url: `https://3d2d-178-155-14-183.eu.ngrok.io/api/vendor/${vendor_id}/products/`,
+        url: `https://a73f-178-155-14-183.eu.ngrok.io/api/vendor/${vendor_id}/products/`,
         method: 'get',
         crossDomain: true,
         dataType: 'json',
@@ -93,7 +106,7 @@ function get_products(vendor_id=1){
 
 function get_first_created_order(vendor_id=1){
 	$.ajax({
-		url: `https://3d2d-178-155-14-183.eu.ngrok.io/api/vendor/${vendor_id}/created/`,
+		url: `https://a73f-178-155-14-183.eu.ngrok.io/api/vendor/${vendor_id}/created/`,
 		method: 'get',
 		crossDomain: true,
 		dataType: 'json',
@@ -145,7 +158,7 @@ $('#start_pay').one("click", function () {
 function get_orders(vendor_id=1){
     $("#vendor_list").empty();
     $.ajax({
-        url: `https://3d2d-178-155-14-183.eu.ngrok.io/api/vendor/${vendor_id}/not-done/`,
+        url: `https://a73f-178-155-14-183.eu.ngrok.io/api/vendor/${vendor_id}/not-done/`,
         method: 'get',
         crossDomain: true,
         dataType: 'json',
@@ -156,18 +169,33 @@ function get_orders(vendor_id=1){
             $.each(data, function( index, value ) {
                 html = `<li class="list-group-item list-group-item-action vendor-list-item" onclick="open_modal_order(${value.id})" data-id="${value.id}">Заказ ${value.id}</li>`
                 $("#vendor_list").append(html);
+                if (value.client != null) {
+                    if (value.status != 1){
+                    myMap.geoObjects.add(
+                    new ymaps.Placemark(
+                        [value.client.lat, value.client.long], null,
+                        {
+                          balloonContent: value.client.name,
+                          iconLayout: 'default#image',
+                            iconImageHref: '/static/img/man2.png',
+                            // Размеры метки.
+                            iconImageSize: [30, 30],
+                            iconImageOffset: [-5, -38]
+                        })
+                    );}
+                }
             });
         }
     });
 }
 
 function to_pay_page(transaction_id){
-    window.location.href = `https://3d2d-178-155-14-183.eu.ngrok.io/api/transaction/${transaction_id}/qrcode/`;
+    window.location.href = `https://a73f-178-155-14-183.eu.ngrok.io/api/transaction/${transaction_id}/qrcode/`;
 }
 
 // function get_orders(){
 // 	$.ajax({
-// 		url: "https://3d2d-178-155-14-183.eu.ngrok.io/api/vendors/",
+// 		url: "https://a73f-178-155-14-183.eu.ngrok.io/api/vendors/",
 // 		method: 'get',
 // 		crossDomain: true,
 // 		dataType: 'json',
@@ -187,7 +215,7 @@ function to_pay_page(transaction_id){
 
 function get_clients(){
     $.ajax({
-    url: "https://3d2d-178-155-14-183.eu.ngrok.io/api/clients/",
+    url: "https://a73f-178-155-14-183.eu.ngrok.io/api/clients/",
     method: "get",
     crossDomain: true,
     dataType: "json",
@@ -227,8 +255,9 @@ function init(){
         center: [44.902286, 37.316861],
         // Уровень масштабирования. Допустимые значения:
         // от 0 (весь мир) до 19.
-        zoom: 18
-    });
+        zoom: 18,
+        controls: []
+    }, {suppressMapOpenBlock: true});
 
     myMap.geoObjects.add(
           new ymaps.Placemark(
@@ -245,8 +274,19 @@ function init(){
           )
         );
 
-    //let timerId = setInterval(() => get_first_created_order(), 10000);
-    get_clients();
+    let timerId = setInterval(() => get_first_created_order(), 10000);
+
+    $.ajax({
+        url: `https://a73f-178-155-14-183.eu.ngrok.io/api/vendor/1/`,
+        method: 'get',
+        crossDomain: true,
+        success: function(data){
+            $("#balance").text(data.balance);
+        },
+        traditional: true
+    });
+
+    //get_clients();
     get_orders();
     get_products();
 }

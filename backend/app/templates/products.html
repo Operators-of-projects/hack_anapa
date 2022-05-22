@@ -5,7 +5,7 @@
 	<meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport"/>
 	<meta content="AnaPay" name="description"/>
 	<meta content="Press F1" name="author"/>
-	<title>AnaPay</title>
+	<title>Press F1</title>
 	<link href="/static/img/anapa.ico" rel="icon" type="image/x-icon"/>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet"/>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
@@ -14,7 +14,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	<div class="container px-4 px-lg-5">
 		<img height="60vh" src="/static/img/anapa.ico" width="60vh">
-		<a class="navbar-brand" href="#!">AnaPay</a>
+		<a class="navbar-brand" href="#!">Press F1</a>
 		<button aria-controls="navbarSupportedContent" aria-expanded="false"
 		        aria-label="Toggle navigation" class="navbar-toggler"
 		        data-bs-target="#navbarSupportedContent" data-bs-toggle="collapse"
@@ -29,7 +29,7 @@
 				<button class="btn btn-outline-dark" type="submit">
 					<i class="bi bi-cash-stack me-1"></i>
 					Мой счёт
-					<span class="badge bg-dark text-white ms-1 rounded-pill">300</span>
+					<span class="badge bg-dark text-white ms-1 rounded-pill" id="balance">300</span>
 				</button>
 			</form>
 		</div>
@@ -211,5 +211,18 @@
 	</div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script>
+	$.ajax({
+        url: `https://a73f-178-155-14-183.eu.ngrok.io/api/vendor/1/`,
+        method: 'get',
+        crossDomain: true,
+        data: {"response": 2},
+        success: function(data){
+            $("#balance").text(data.balance);
+        },
+        traditional: true
+    });
+</script>
 </body>
 </html>

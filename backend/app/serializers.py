@@ -49,7 +49,7 @@ class VendorTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ('id', 'status', 'cost', 'response', 'client', 'product', 'description', 'photo')
+        fields = ('id', 'status', 'cost', 'response', 'client', 'product')
 
 
 class ClientTransactionSerializer(serializers.ModelSerializer):

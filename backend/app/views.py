@@ -63,14 +63,14 @@ class DetailVendorView(APIView):
 
     def get(self, request, vendor_id):
         vendor = Vendor.objects.get(pk=vendor_id)
-        ser = ClientSerializer(vendor)
+        ser = VendorSerializer(vendor)
         return Response(ser.data, status=status.HTTP_200_OK)
 
     def put(self, request, vendor_id):
         vendor = Vendor.objects.get(pk=vendor_id)
         vendor.balance = request.data.get('balance') if request.data.get('balance') else vendor.balance
-        vendor.rating = request.data.get('rating') if request.data.get('rating') else vendor.balance
-        vendor.status = request.data.get('status') if request.data.get('status') else vendor.balance
+        vendor.rating = request.data.get('rating') if request.data.get('rating') else vendor.rating
+        vendor.status = request.data.get('status') if request.data.get('status') else vendor.status
         vendor.lat = request.data.get('lat') if request.data.get('lat') else vendor.lat
         vendor.long = request.data.get('long') if request.data.get('long') else vendor.long
         vendor.save()
@@ -145,9 +145,9 @@ class AddTransaction(APIView):
             cost += product.price
         if request.data.get("client_id"):
             client = Client.objects.get(id=request.data.get("client_id"))
-            new_transaction = Transaction.objects.create(vendor=vendor, client=client, cost=cost, status=2)
+            new_transaction = Transaction.objects.create(vendor=vendor, client=client, cost=cost, status=1)
         else:
-            new_transaction = Transaction.objects.create(vendor=vendor, cost=cost, status=2)
+            new_transaction = Transaction.objects.create(vendor=vendor, cost=cost, status=2, response=2)
         new_transaction.product.add(*products)
         resp = {"trasaction_id": new_transaction.pk}
         return Response(resp)
@@ -160,6 +160,8 @@ class TransactionToDone(APIView):
     def post(self, request):
         transaction_id = request.data.get("transaction_id")
         transaction = Transaction.objects.get(id=transaction_id)
+        if not transaction.client:
+            transaction.client = Client.objects.get(id=request.data.get("client_id"))
         transaction.client.balance = transaction.client.balance - transaction.cost
         transaction.vendor.balance = transaction.vendor.balance + transaction.cost
         transaction.client.save()
@@ -199,13 +201,22 @@ class DetailTransactionView(APIView):
         ser = DetailTransaction(tr)
         return Response(ser.data, status=status.HTTP_200_OK)
 
+    def put(self, request, transaction_id):
+        transaction = Transaction.objects.get(pk=transaction_id)
+        if request.data.get('status'):
+            transaction.status = request.data.get('status')
+        if request.data.get('response'):
+            transaction.response = request.data.get('response')
+        transaction.save()
+        return Response({'transaction_id': transaction_id}, status=status.HTTP_202_ACCEPTED)
+
 
 class NewTransactionsView(APIView):
     def get(self, request, vendor_id):
         new_transactions = Transaction.objects.filter(vendor=vendor_id, status=1).first()
         if new_transactions:
-            # new_transactions.status = 2
-            # new_transactions.save()
+            new_transactions.status = 2
+            new_transactions.save()
             ser = VendorTransactionSerializer(new_transactions)
             return Response(ser.data, status=status.HTTP_200_OK)
         return Response({'status': 'Not found'}, status=status.HTTP_400_BAD_REQUEST)
@@ -248,14 +259,20 @@ class GetClientsByGPSView(APIView):
 class GenerateQRView(APIView):
     def get(self, request, transaction_id):
         tr = Transaction.objects.get(pk=transaction_id)
-        qr = qrcode.make(f"transaction_id: {transaction_id}")
+        qr = qrcode.make(f"{transaction_id}")
         url = f'img/transaction_id-{transaction_id}.png'
         qr.save(f"static/{url}")
         return render(request, 'qr2.html', context={'transaction_id': transaction_id, 'sum': tr.cost, 'img_url': url})
 
 
 def home(request):
+
     return render(request, 'map.html')
+
+
+def home2(request):
+    print('sa')
+    return render(request, 'map2.html')
 
 
 def orders(request):

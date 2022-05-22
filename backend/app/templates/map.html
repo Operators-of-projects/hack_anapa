@@ -10,11 +10,15 @@
     <script src="https://api-maps.yandex.ru/2.1/?apikey=56eaa141-42bd-455d-96b9-2c529dee0dd8&lang=ru_RU" type="text/javascript">
     </script>
   </head>
-  <body>
+  <body style="font-family: sans-serif;">
     <div class="main" id="main">
-      <div  style="position: absolute; z-index: 1; display: flex;">
-        <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">Заказы</button>
-        
+      <div  style="width: 101%; position: absolute; z-index: 1; display: flex; left: -6px; justify-content: space-between; flex-direction: row;">
+        <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">>></button>
+        <button class="btn btn-outline-dark" type="submit" onclick="javascript:window.location.href='{% url 'products' %}'">
+					<i class="bi bi-cash-stack me-1"></i>
+					Мой счёт
+					<span class="badge bg-dark text-white ms-1 rounded-pill" id="balance"></span>
+				</button>
 
       </div>
       

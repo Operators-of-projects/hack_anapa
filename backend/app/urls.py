@@ -6,11 +6,13 @@ from . import views
 
 urlpatterns = [
     path('home/', views.home, name='home'),
+    path('home2/', views.home2, name='home2'),
     path('orders/', views.orders, name='orders'),
     path('products/', views.products, name='products'),
     path('create-client/', views.AddClientView.as_view()),
     path('create-vendor/', views.AddVendorView.as_view()),
     path('create-transaction/', views.AddTransaction.as_view()),
+    path('transaction-to-done/', views.TransactionToDone.as_view()),
     path('vendors/', views.GetVendersView.as_view()),
     path('client/<int:client_id>/', views.DetailClientView.as_view()),
     path('clients/', views.GetClientsView.as_view()),

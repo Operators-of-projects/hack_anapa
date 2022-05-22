@@ -19,7 +19,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	<div class="container px-4 px-lg-5">
 		<img height="60vh" src="/static/img/anapa.ico" width="60vh">
-		<a class="navbar-brand" href="#!">AnaPay</a>
+		<a class="navbar-brand" href="#!">Press F1</a>
 		<button aria-controls="navbarSupportedContent" aria-expanded="false"
 		        aria-label="Toggle navigation" class="navbar-toggler"
 		        data-bs-target="#navbarSupportedContent" data-bs-toggle="collapse"
@@ -75,6 +75,7 @@
 </body>
 <script>
 console.log($("#galka"));
+let intervalId;
 $(".my-rating").starRating({
   initialRating: 4,
   strokeColor: '#894A00',
@@ -83,7 +84,7 @@ $(".my-rating").starRating({
 });
 function test(){
     $.ajax({
-        url: 'https://3d2d-178-155-14-183.eu.ngrok.io/api/transaction/{{transaction_id}}/',
+        url: 'https://a73f-178-155-14-183.eu.ngrok.io/api/transaction/{{transaction_id}}/',
         method: 'get',
         crossDomain: true,
         dataType: 'json',
@@ -103,7 +104,9 @@ function test(){
 test()
 function ready(){
    $(document).ready(function(){
-    setInterval('test()', 5000);
+    if (!intervalId) {
+    	intervalId = setInterval('test()', 2500);
+    }
 });
 }
 </script>
